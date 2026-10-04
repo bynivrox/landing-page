@@ -15,7 +15,7 @@ import { site } from "@/lib/site";
 export default function LandingPage() {
   return (
     <main>
-      <Hero contactUrl={site.contactUrl} />
+      <Hero trialUrl={site.signupUrl} />
       <div data-theme="light" className="theme-light">
         <LayersSection />
         <ProblemSection />
@@ -26,7 +26,10 @@ export default function LandingPage() {
         <ConfigurationSection />
         <DriftSection />
         <SecuritySection />
-        <CtaSection primary={{ href: site.contactUrl, label: "Request a demo" }} secondary={{ href: site.appUrl, label: "Sign in" }} />
+        <CtaSection
+          primary={{ href: site.signupUrl, label: "Start your free trial" }}
+          note="One month of Business, free"
+          secondary={{ href: site.appUrl, label: "Sign in" }} />
       </div>
     </main>
   );

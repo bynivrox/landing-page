@@ -26,7 +26,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}>
       <body className="min-h-svh overflow-x-clip bg-background text-foreground">
         <MotionConfig reducedMotion="user">
-          <Navigation appUrl={site.appUrl} contactUrl={site.contactUrl} />
+          <Navigation appUrl={site.appUrl} trialUrl={site.signupUrl} />
           {children}
           <Footer />
         </MotionConfig>

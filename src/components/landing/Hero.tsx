@@ -11,7 +11,7 @@ import { HeroTopology } from "./HeroTopology";
  * Dark, swept by Nivrox-blue light that dissolves into the light page below. The headline resolves out of a blur;
  * the platform drifts up and the light grows as the hero scrolls away.
  */
-export function Hero({ contactUrl }: { contactUrl: string }) {
+export function Hero({ trialUrl }: { trialUrl: string }) {
   const section = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: section, offset: ["start start", "end start"] });
   const platformY = useTransform(scrollYProgress, [0, 1], ["0%", "-18%"]);
@@ -71,11 +71,12 @@ export function Hero({ contactUrl }: { contactUrl: string }) {
           className="mt-10 flex flex-wrap items-center gap-6"
         >
           <Link
-            href={contactUrl}
+            href={trialUrl}
             className="group inline-flex h-12 items-stretch gap-1 rounded-md text-sm font-medium text-brand-foreground"
           >
-            <span className="flex items-center rounded-md bg-gradient-to-r from-brand-soft to-brand px-5 transition-[filter] group-hover:brightness-110">
-              Request a demo
+            <span className="flex flex-col justify-center rounded-md bg-gradient-to-r from-brand-soft to-brand px-5 leading-tight transition-[filter] group-hover:brightness-110">
+              Start your free trial
+              <span className="text-xs font-normal opacity-80">One month of Business</span>
             </span>
             <span className="grid w-12 place-items-center rounded-md bg-brand transition-transform group-hover:translate-x-0.5">
               <ArrowRight className="size-4" />

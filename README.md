@@ -35,11 +35,23 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm build
 | Variable | Purpose |
 |---|---|
 | `APP_URL` | Where "Sign in" leads |
-| `CONTACT_URL` | Request a demo / Contact sales |
-| `SIGNUP_URL` | Sign-up for the hosted plans |
+| `CONTACT_URL` | Contact sales, request an integration |
+| `SIGNUP_URL` | Sign-up for the hosted plans and the free trial (one month of Business) |
 | `SELF_HOST_URL` | Installation instructions for Community |
 | `MANAGEMENT_URL` | Source of live prices (falls back to defaults when unreachable) |
 | `PRICING_REVALIDATE` | Price cache in seconds (default 60) |
+
+### Docker
+
+Pages are prerendered, so the links are build arguments; `MANAGEMENT_URL` and `PRICING_REVALIDATE` can also be set at runtime
+for price refreshes.
+
+```sh
+docker build -t nivrox-landing-page \
+  --build-arg APP_URL=https://app.example.com --build-arg SIGNUP_URL=https://app.example.com/signup \
+  --build-arg CONTACT_URL=mailto:sales@example.com --build-arg MANAGEMENT_URL=https://management.example.com .
+docker run -p 3200:3200 -e MANAGEMENT_URL=https://management.example.com nivrox-landing-page
+```
 
 Built with Next.js 16, Tailwind CSS 4 and Motion. Every animation respects `prefers-reduced-motion`.
 

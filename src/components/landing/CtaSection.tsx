@@ -12,11 +12,14 @@ export function CtaSection({
   tagline = "Design it · Simulate it · Deploy it · Verify it",
   primary,
   secondary,
+  note,
 }: {
   title?: string;
   tagline?: string;
   primary: Action;
   secondary?: Action;
+  /** A line under the buttons, e.g. what the trial includes. */
+  note?: string;
 }) {
   return (
     <section id="contact" className="relative px-3 pt-[var(--section-gap)] pb-6 sm:px-5">
@@ -44,6 +47,7 @@ export function CtaSection({
               </ButtonLink>
             )}
           </div>
+          {note && <p className="mt-5 text-sm text-foreground/70">{note}</p>}
         </div>
       </div>
     </section>

@@ -11,7 +11,7 @@ import { Logo } from "./primitives";
  * A framed bar of bordered cells (logo, links, actions). It takes the palette of the section beneath it (data-theme),
  * and a thin line along its bottom edge shows how far the page has scrolled.
  */
-export function Navigation({ appUrl, contactUrl }: { appUrl: string; contactUrl: string }) {
+export function Navigation({ appUrl, trialUrl }: { appUrl: string; trialUrl: string }) {
   const pathname = usePathname();
   const [light, setLight] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -80,13 +80,14 @@ export function Navigation({ appUrl, contactUrl }: { appUrl: string; contactUrl:
             Sign in
           </Link>
           <Link
-            href={contactUrl}
+            href={trialUrl}
+            title="One month of Business, free"
             className={cn(
               "flex h-10 items-center rounded-sm px-4 text-sm font-medium transition-colors",
               light ? "bg-foreground text-background hover:bg-foreground/85" : "bg-white text-black hover:bg-white/85",
             )}
           >
-            Request a demo
+            Start your free trial
           </Link>
         </div>
 
