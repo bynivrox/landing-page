@@ -1,0 +1,224 @@
+@import "tailwindcss";
+
+/*
+ * Nivrox design tokens (the Nivrox brand guidelines). Components use these through Tailwind
+ * (bg-surface, text-muted-foreground, border-border, text-brand, ...) and never hard-code colors.
+ * Brand blue marks Nivrox itself, active paths and actions; semantic colors mark infrastructure state only.
+ *
+ * The page is dark where it starts (hero) and ends (call to action), light in between. A section opts into the light
+ * palette with .theme-light, which redefines the same tokens, so every component works on both.
+ */
+:root,
+.theme-dark {
+  --brand: #004fff;
+  --brand-foreground: #ffffff;
+  --brand-hover: #1f63ff;
+  --brand-glow: rgb(0 79 255 / 0.55);
+  --brand-soft: #7fa6ff;
+  /* The light the hero sweeps into: deep brand blue to a pale sky. */
+  --brand-deep: #0a1fb8;
+  --sky: #9cc0ff;
+
+  --background: #040507;
+  --surface: #0b0d11;
+  --surface-elevated: #11141a;
+  --surface-muted: #171b22;
+  --border: rgb(255 255 255 / 0.08);
+  --border-strong: rgb(255 255 255 / 0.16);
+  --foreground: #f5f7fa;
+  --muted-foreground: #8a93a3;
+  --faint-foreground: #545c6b;
+  --grid-line: rgb(255 255 255 / 0.035);
+  --illustration: rgb(255 255 255 / 0.55);
+  /* Wireframe glass for the hero's isometric machines, and their floating value tags. */
+  --glass-top: rgb(255 255 255 / 0.12);
+  --glass-left: rgb(255 255 255 / 0.04);
+  --glass-right: rgb(255 255 255 / 0.08);
+  --tag: rgb(4 5 7 / 0.72);
+  --tag-muted: rgb(0 0 0 / 0.25);
+  --tag-border: rgb(255 255 255 / 0.18);
+
+  --success: #2fbf71;
+  --warning: #f2a93b;
+  --error: #f04848;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-card: 28px;
+
+  --section-gap: clamp(7rem, 14vw, 12rem);
+  /* The pale surface the hero light dissolves into. */
+  --light-background: #eceff7;
+}
+
+/* Back to the dark palette inside a light section (code panels, the closing card). */
+.theme-dark {
+  color: var(--foreground);
+  color-scheme: dark;
+}
+
+.theme-light {
+  --background: var(--light-background);
+  --surface: #ffffff;
+  --surface-elevated: #f6f8fc;
+  --surface-muted: #e2e7f2;
+  --border: rgb(12 22 60 / 0.09);
+  --border-strong: rgb(12 22 60 / 0.18);
+  --foreground: #0c1222;
+  --muted-foreground: #576076;
+  --faint-foreground: #98a1b4;
+  --grid-line: rgb(12 22 60 / 0.045);
+  --illustration: #7d879b;
+  --brand-glow: rgb(0 79 255 / 0.22);
+  --warning: #c27a0e;
+  --success: #198754;
+  --error: #d33a3a;
+  color: var(--foreground);
+  background: var(--background);
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-deep: var(--brand-deep);
+  --color-sky: var(--sky);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-faint-foreground: var(--faint-foreground);
+  --color-illustration: var(--illustration);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-light-background: var(--light-background);
+
+  --font-display: var(--font-space-grotesk);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-card: var(--radius-card);
+}
+
+html {
+  background: var(--background);
+  color: var(--foreground);
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--brand);
+  color: var(--brand-foreground);
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+
+/* The faint engineering grid behind technical surfaces. */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* A headline's quieter half: the foreground fading out. */
+.text-fade {
+  background: linear-gradient(
+    90deg,
+    var(--foreground) 0%,
+    var(--foreground) 35%,
+    color-mix(in oklab, var(--foreground) 30%, transparent) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* A headline's emphasized half: Nivrox blue lifting into sky. */
+.text-brand-gradient {
+  background: linear-gradient(90deg, var(--sky) 0%, var(--brand) 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/*
+ * The hero's light dissolving into the light page: a long fade with eased stops (a linear fade shows a visible edge),
+ * tinted with sky on the way so blue turns pale before it turns light.
+ */
+.fade-to-light {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in oklab, var(--sky) 10%, transparent) 22%,
+    color-mix(in oklab, var(--sky) 22%, color-mix(in oklab, var(--light-background) 18%, transparent)) 42%,
+    color-mix(in oklab, var(--light-background) 55%, transparent) 62%,
+    color-mix(in oklab, var(--light-background) 85%, transparent) 80%,
+    var(--light-background) 100%
+  );
+}
+
+/* The same light lingering at the top of the light page. */
+.haze-from-hero {
+  background:
+    radial-gradient(70% 100% at 75% 0%, color-mix(in oklab, var(--sky) 38%, transparent) 0%, transparent 70%),
+    radial-gradient(50% 80% at 15% 0%, color-mix(in oklab, var(--brand-soft) 18%, transparent) 0%, transparent 70%);
+}
+
+@keyframes caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+.animate-caret {
+  animation: caret 1s steps(1) infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 7s ease-in-out infinite;
+}
