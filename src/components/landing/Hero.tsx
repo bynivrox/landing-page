@@ -21,7 +21,8 @@ export function Hero({ trialUrl }: { trialUrl: string }) {
   return (
     <section id="top" ref={section} data-theme="dark" className="relative isolate min-h-[max(100svh,760px)] overflow-hidden">
       {/* Light: black, swept by brand blue from the lower right, settling into the page's light surface. */}
-      <motion.div aria-hidden className="absolute inset-0 -z-10 origin-bottom-right" style={{ scale: lightScale }}>
+      {/* will-change: the blurred light is rasterized once and scaled by the compositor, not re-blurred every scroll frame. */}
+      <motion.div aria-hidden className="absolute inset-0 -z-10 origin-bottom-right will-change-transform" style={{ scale: lightScale }}>
         <div className="absolute inset-0 bg-background" />
         <div className="absolute -right-[20%] -bottom-[35%] h-[120%] w-[110%] rounded-[50%] bg-brand-deep blur-[90px]" />
         <div className="absolute -right-[10%] -bottom-[45%] h-[95%] w-[85%] rounded-[50%] bg-brand blur-[80px]" />
@@ -32,7 +33,7 @@ export function Hero({ trialUrl }: { trialUrl: string }) {
 
       {/* Anchored to the text column rather than the viewport, so the scene stays beside the copy on wide screens. */}
       <div className="pointer-events-none absolute inset-0 mx-auto hidden max-w-7xl lg:block">
-        <motion.div style={{ y: platformY }} className="absolute top-[16%] right-[-12%] w-[58%] max-w-[900px]">
+        <motion.div style={{ y: platformY }} className="absolute top-[16%] right-[-12%] w-[58%] max-w-[900px] will-change-transform">
           <HeroTopology className="w-full" />
         </motion.div>
       </div>

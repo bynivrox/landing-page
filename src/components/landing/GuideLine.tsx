@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { sectionNames } from "@/lib/sections";
 
 interface Point {
@@ -9,18 +9,26 @@ interface Point {
 }
 
 interface Route {
+  /** The full route (identifies it; it is drawn per segment). */
   d: string;
+  /**
+   * The route in short pieces, for both the dashed way ahead and the travelled line: a page-tall dashed path makes
+   * every tile re-dash the whole path, and only the solid piece under the dot repaints while scrolling.
+   */
+  segments: { d: string; from: number; to: number }[];
   height: number;
-}
-
-interface Dot extends Point {
-  travelled: number;
 }
 
 /** Where in the viewport the dot sits: the line is "here" at this height. */
 const READING_LINE = 0.5;
 /** Sections closer together than this share a turn (the wave would kink). */
 const MIN_STEP = 240;
+const HIDDEN = "0 1000000";
+const DASH = [3, 7];
+/** Each S is drawn as this many exact pieces, so a scroll frame repaints a short stretch of the line. */
+const PIECES = 6;
+
+type Cubic = [Point, Point, Point, Point];
 
 /**
  * A line that meanders through the landing page from under the hero to the closing card: one continuous wave that
@@ -28,13 +36,17 @@ const MIN_STEP = 240;
  * dashed way ahead, and a dot marks where you are. It all runs behind the content and is kept faint so it never
  * competes with text (cards cover it, so it reads as flowing underneath).
  *
+ * Scrolling never re-renders it: the dot and the travelled part are written straight to the DOM, and the travelled
+ * line is split into short pieces so a frame repaints one of them instead of a path the height of the page.
+ *
  * Render it as the first child of a `relative isolate` wrapper: it sits at -z-10 inside it, under every section.
  */
 export function GuideLine() {
   const layer = useRef<HTMLDivElement>(null);
-  const path = useRef<SVGPathElement>(null);
+  const dot = useRef<HTMLDivElement>(null);
+  const segments = useRef<(SVGPathElement | null)[]>([]);
+  const dashes = useRef<(SVGPathElement | null)[]>([]);
   const [route, setRoute] = useState<Route | null>(null);
-  const [dot, setDot] = useState<Dot | null>(null);
 
   // Lay out the route in the wrapper's coordinates.
   useEffect(() => {
@@ -74,11 +86,19 @@ export function GuideLine() {
       // Start centred just under the hero, then one smooth S between every pair of turns.
       let previous: Point = { x: width / 2, y: 0 };
       let d = `M ${previous.x} ${previous.y}`;
+      const parts: Route["segments"] = [];
       for (const turn of turns) {
-        d += ` ${wave(previous, turn)}`;
+        const reach = (turn.y - previous.y) * 0.5;
+        const curve: Cubic = [previous, { x: previous.x, y: previous.y + reach }, { x: turn.x, y: turn.y - reach }, turn];
+        d += ` C ${curve[1].x} ${curve[1].y} ${curve[2].x} ${curve[2].y} ${turn.x} ${turn.y}`;
+        for (const [p0, p1, p2, p3] of subdivide(curve, PIECES)) {
+          parts.push({ d: `M ${p0.x} ${p0.y} C ${p1.x} ${p1.y} ${p2.x} ${p2.y} ${p3.x} ${p3.y}`, from: p0.y, to: p3.y });
+        }
         previous = turn;
       }
-      setRoute(turns.length > 1 ? { d, height: card + 24 } : null);
+      const next = turns.length > 1 ? { d, segments: parts, height: card + 24 } : null;
+      // Measuring runs on every resize of the page; keep the same route (and the painted SVG) when nothing moved.
+      setRoute((current) => (current?.d === next?.d && current?.height === next?.height ? current : next));
     };
 
     measure();
@@ -87,30 +107,72 @@ export function GuideLine() {
     return () => observer.disconnect();
   }, []);
 
-  // Find the point on the route at the reading line (the route only ever runs downwards, so search by length).
-  const follow = useCallback(() => {
-    const element = path.current;
-    const wrapper = layer.current?.parentElement;
-    if (!element || !wrapper || !route) {
+  // Continue the dash pattern across segments, so the split route dashes exactly like one path.
+  useEffect(() => {
+    if (!route) {
       return;
     }
-    const target = window.innerHeight * READING_LINE - wrapper.getBoundingClientRect().top;
-    let low = 0;
-    let high = element.getTotalLength();
-    for (let i = 0; i < 24; i++) {
-      const mid = (low + high) / 2;
-      if (element.getPointAtLength(mid).y < target) {
-        low = mid;
-      } else {
-        high = mid;
-      }
-    }
-    const point = element.getPointAtLength(low);
-    setDot({ x: point.x, y: point.y, travelled: low });
+    const period = DASH[0] + DASH[1];
+    let travelled = 0;
+    route.segments.forEach((_, index) => {
+      dashes.current[index]?.setAttribute("stroke-dashoffset", String(travelled % period));
+      travelled += segments.current[index]?.getTotalLength() ?? 0;
+    });
   }, [route]);
 
+  // Follow the reading line: find the segment it crosses, then the point on it (each S only runs downwards).
   useEffect(() => {
+    const wrapper = layer.current?.parentElement;
+    if (!route || !wrapper) {
+      return;
+    }
     let frame = 0;
+    let active = -1;
+    let dash = "";
+    const follow = () => {
+      const target = window.innerHeight * READING_LINE - wrapper.getBoundingClientRect().top;
+      const count = route.segments.length;
+      let index = route.segments.findIndex((segment) => target < segment.to);
+      if (index === -1) {
+        index = count - 1;
+      }
+      const element = segments.current[index];
+      if (!element) {
+        return;
+      }
+
+      const total = element.getTotalLength();
+      let low = 0;
+      let high = total;
+      for (let i = 0; i < 20; i++) {
+        const mid = (low + high) / 2;
+        if (element.getPointAtLength(mid).y < target) {
+          low = mid;
+        } else {
+          high = mid;
+        }
+      }
+      const point = element.getPointAtLength(low);
+
+      // Earlier segments solid, later ones hidden; only touch what changed.
+      if (index !== active) {
+        segments.current.forEach((path, i) => {
+          if (path && i !== index) {
+            path.setAttribute("stroke-dasharray", i < index ? "none" : HIDDEN);
+          }
+        });
+        active = index;
+      }
+      const next = `${low} 1000000`;
+      if (next !== dash) {
+        element.setAttribute("stroke-dasharray", next);
+        dash = next;
+      }
+      if (dot.current) {
+        dot.current.style.transform = `translate(${point.x}px, ${point.y}px)`;
+        dot.current.style.visibility = "visible";
+      }
+    };
     const onScroll = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(follow);
@@ -124,7 +186,7 @@ export function GuideLine() {
       window.removeEventListener("resize", onScroll);
       cancelAnimationFrame(frame);
     };
-  }, [follow]);
+  }, [route]);
 
   return (
     <div
@@ -135,20 +197,37 @@ export function GuideLine() {
     >
       {route && (
         <svg className="absolute inset-0 size-full overflow-visible" fill="none">
-          <path d={route.d} stroke="var(--brand)" strokeOpacity={0.09} strokeWidth={1.5} strokeDasharray="3 7" strokeLinecap="round" />
-          <path
-            ref={path}
-            d={route.d}
-            stroke="var(--brand)"
-            strokeOpacity={0.2}
-            strokeWidth={1.5}
-            strokeLinecap="round"
-            strokeDasharray={`${dot?.travelled ?? 0} 1000000`}
-          />
+          {route.segments.map((segment, index) => (
+            <path
+              key={`dash ${segment.d}`}
+              ref={(element) => {
+                dashes.current[index] = element;
+              }}
+              d={segment.d}
+              stroke="var(--brand)"
+              strokeOpacity={0.09}
+              strokeWidth={1.5}
+              strokeDasharray={DASH.join(" ")}
+              strokeLinecap="round"
+            />
+          ))}
+          {route.segments.map((segment, index) => (
+            <path
+              key={segment.d}
+              ref={(element) => {
+                segments.current[index] = element;
+              }}
+              d={segment.d}
+              stroke="var(--brand)"
+              strokeOpacity={0.2}
+              strokeWidth={1.5}
+              strokeDasharray={HIDDEN}
+            />
+          ))}
         </svg>
       )}
-      {route && dot && (
-        <div className="absolute opacity-20" style={{ top: dot.y, left: dot.x }}>
+      {route && (
+        <div ref={dot} className="invisible absolute top-0 left-0 opacity-20">
           <span className="absolute top-0 left-0 size-2.5 -translate-1/2 rounded-full bg-brand shadow-[0_0_0_4px_color-mix(in_oklab,var(--brand)_25%,transparent)]" />
           <span className="absolute top-0 left-0 size-2.5 -translate-1/2 animate-ping rounded-full bg-brand/60 motion-reduce:hidden" />
         </div>
@@ -158,10 +237,32 @@ export function GuideLine() {
 }
 
 /**
- * One S from a turn to the next: it leaves and arrives vertically (so every turn is round, never a corner) and the
- * control arms span half the drop, which spreads the bend evenly like a sine wave instead of bunching it at the ends.
+ * Splits a cubic Bézier into `count` pieces of equal parameter span (de Casteljau), exactly on the original curve.
+ * Every S leaves and arrives vertically and its control arms span half the drop, so the bend is spread evenly like a
+ * sine wave and each piece still only runs downwards.
  */
-function wave(from: Point, to: Point) {
-  const reach = (to.y - from.y) * 0.5;
-  return `C ${from.x} ${from.y + reach} ${to.x} ${to.y - reach} ${to.x} ${to.y}`;
+function subdivide(curve: Cubic, count: number): Cubic[] {
+  const pieces: Cubic[] = [];
+  let rest = curve;
+  for (let k = count; k > 1; k--) {
+    const [head, tail] = split(rest, 1 / k);
+    pieces.push(head);
+    rest = tail;
+  }
+  pieces.push(rest);
+  return pieces;
+}
+
+function split([p0, p1, p2, p3]: Cubic, t: number): [Cubic, Cubic] {
+  const lerp = (a: Point, b: Point): Point => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+  const a = lerp(p0, p1);
+  const b = lerp(p1, p2);
+  const c = lerp(p2, p3);
+  const ab = lerp(a, b);
+  const bc = lerp(b, c);
+  const mid = lerp(ab, bc);
+  return [
+    [p0, a, ab, mid],
+    [mid, bc, c, p3],
+  ];
 }

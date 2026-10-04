@@ -17,7 +17,11 @@ export default function LandingPage() {
   return (
     <main>
       <Hero trialUrl={site.signupUrl} />
-      <div data-theme="light" className="theme-light relative isolate">
+      {/*
+        Its own compositing layer: when a fast scroll outruns painting, Chrome fills the unpainted tiles with this
+        layer's light background instead of the body's dark one (the black flashes).
+      */}
+      <div data-theme="light" className="theme-light relative isolate will-change-transform">
         <GuideLine />
         <LayersSection />
         <ProblemSection />

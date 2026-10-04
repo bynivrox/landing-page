@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { navigation } from "@/lib/sections";
 import { cn } from "@/lib/utils";
 import { Logo } from "./primitives";
@@ -14,7 +14,8 @@ import { Logo } from "./primitives";
 export function Navigation({ appUrl, trialUrl }: { appUrl: string; trialUrl: string }) {
   const pathname = usePathname();
   const [light, setLight] = useState(false);
-  const [progress, setProgress] = useState(0);
+  // Written straight to the bar while scrolling, so the navigation only re-renders when its palette changes.
+  const progress = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     let frame = 0;
@@ -28,7 +29,9 @@ export function Navigation({ appUrl, trialUrl }: { appUrl: string; trialUrl: str
         .at(-1);
       setLight(under?.dataset.theme === "light");
       const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0);
+      if (progress.current) {
+        progress.current.style.width = `${(scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0) * 100}%`;
+      }
     };
     const onScroll = () => {
       cancelAnimationFrame(frame);
@@ -93,8 +96,8 @@ export function Navigation({ appUrl, trialUrl }: { appUrl: string; trialUrl: str
 
         <span
           aria-hidden
-          className="absolute bottom-0 left-0 h-px bg-brand transition-[width] duration-150"
-          style={{ width: `${progress * 100}%` }}
+          ref={progress}
+          className="absolute bottom-0 left-0 h-px w-0 bg-brand transition-[width] duration-150"
         />
       </nav>
     </header>
