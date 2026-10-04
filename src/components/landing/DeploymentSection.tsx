@@ -1,7 +1,8 @@
 "use client";
 
-import { motion, useMotionValueEvent, useScroll, useTransform } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import { useRef, useState } from "react";
+import { useMotionValueChange } from "./useMotionValueChange";
 import { cn } from "@/lib/utils";
 import { Container, Panel, PanelHeader, SectionHeading, StatusMark } from "./primitives";
 
@@ -21,7 +22,7 @@ export function DeploymentSection() {
   const { scrollYProgress } = useScroll({ target: section, offset: ["start 75%", "end 70%"] });
   const width = useTransform(scrollYProgress, [0, 0.8], ["0%", "100%"]);
 
-  useMotionValueEvent(scrollYProgress, "change", (value) => setReached(Math.floor(Math.min(1, value / 0.8) * stages.length + 0.0001)));
+  useMotionValueChange(scrollYProgress, (value) => setReached(Math.floor(Math.min(1, value / 0.8) * stages.length + 0.0001)));
 
   return (
     <section id="deployment" ref={section} className="relative pt-[var(--section-gap)]">

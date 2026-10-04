@@ -1,8 +1,9 @@
 "use client";
 
 import { BrickWall, Layers, Play, Radar, RotateCcw, Server, Shield } from "lucide-react";
-import { animate, motion, useMotionValue, useMotionValueEvent, useScroll, useTransform } from "motion/react";
+import { animate, motion, useMotionValue, useScroll, useTransform } from "motion/react";
 import { useRef, useState } from "react";
+import { useMotionValueChange } from "./useMotionValueChange";
 import { cn } from "@/lib/utils";
 import { Container, Eyebrow, Panel, PanelHeader, StatusMark } from "./primitives";
 
@@ -52,12 +53,12 @@ export function SimulationSection() {
   const scrolled = useTransform(scrollYProgress, [0.08, 0.85], [0, 1], { clamp: true });
   const played = useMotionValue(0);
 
-  useMotionValueEvent(scrolled, "change", (value) => {
+  useMotionValueChange(scrolled, (value) => {
     if (!replaying) {
       setProgressValue(value);
     }
   });
-  useMotionValueEvent(played, "change", (value) => {
+  useMotionValueChange(played, (value) => {
     if (replaying) {
       setProgressValue(value);
     }
@@ -80,7 +81,7 @@ export function SimulationSection() {
 
   return (
     <section id="simulation" ref={section} className="relative mt-24 lg:mt-0 lg:h-[calc(100svh*3)]">
-      <div className="lg:sticky lg:top-0 lg:flex lg:h-svh lg:items-center">
+      <div className="lg:sticky lg:top-0 lg:flex lg:min-h-svh lg:items-center lg:pt-24 lg:pb-8">
         <Container>
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>

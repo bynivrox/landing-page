@@ -3,6 +3,7 @@ import { CtaSection } from "@/components/landing/CtaSection";
 import { DeploymentSection } from "@/components/landing/DeploymentSection";
 import { DriftSection } from "@/components/landing/DriftSection";
 import { ExistingInfrastructure } from "@/components/landing/ExistingInfrastructure";
+import { GuideLine } from "@/components/landing/GuideLine";
 import { Hero } from "@/components/landing/Hero";
 import { LayersSection } from "@/components/landing/LayersSection";
 import { ProblemSection } from "@/components/landing/ProblemSection";
@@ -16,7 +17,8 @@ export default function LandingPage() {
   return (
     <main>
       <Hero trialUrl={site.signupUrl} />
-      <div data-theme="light" className="theme-light">
+      <div data-theme="light" className="theme-light relative isolate">
+        <GuideLine />
         <LayersSection />
         <ProblemSection />
         <WorkflowSection />

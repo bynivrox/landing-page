@@ -1,7 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
+import { AnimatePresence, motion, useScroll } from "motion/react";
 import { useRef, useState, type ReactNode } from "react";
+import { useMotionValueChange } from "./useMotionValueChange";
 import { cn } from "@/lib/utils";
 import { Container, Eyebrow, Panel, PanelHeader, StatusMark, type Status } from "./primitives";
 
@@ -125,7 +126,7 @@ const steps: Step[] = [
 ];
 
 /**
- * Discover → Verify, driven by scrolling: the section pins and each viewport of scroll advances one step.
+ * Discover → Verify, driven by scrolling: the section pins and every ~30% of a viewport of scroll advances one step.
  * Without enough height (small screens) it simply lists the steps.
  */
 export function WorkflowSection() {
@@ -133,18 +134,18 @@ export function WorkflowSection() {
   const [active, setActive] = useState(0);
   const { scrollYProgress } = useScroll({ target: section, offset: ["start start", "end end"] });
 
-  useMotionValueEvent(scrollYProgress, "change", (value) => {
+  useMotionValueChange(scrollYProgress, (value) => {
     setActive(Math.min(steps.length - 1, Math.max(0, Math.floor(value * steps.length))));
   });
 
   return (
-    <section id="workflow" ref={section} className="relative mt-[var(--section-gap)] lg:h-[calc(100svh*5)]">
-      <div className="lg:sticky lg:top-0 lg:flex lg:h-svh lg:items-center">
+    <section id="workflow" ref={section} className="relative mt-[var(--section-gap)] lg:h-[calc(100svh*3)]">
+      <div className="lg:sticky lg:top-0 lg:flex lg:min-h-svh lg:items-center lg:pt-24 lg:pb-8">
         <Container>
           <div>
             <div>
               <Eyebrow>One continuous workflow</Eyebrow>
-              <h2 className="mt-5 font-display text-4xl font-medium leading-[1.04] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
+              <h2 className="mt-5 font-display text-4xl font-medium leading-[1.04] tracking-[-0.04em] sm:text-5xl lg:text-6xl lg:[@media(max-height:860px)]:mt-3 lg:[@media(max-height:860px)]:text-5xl">
                 See it. Understand it.
                 <br />
                 <span className="text-brand-gradient">Change it. Verify it.</span>
@@ -152,13 +153,13 @@ export function WorkflowSection() {
             </div>
           </div>
 
-          <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <div className="mt-12 grid gap-10 lg:[@media(max-height:860px)]:mt-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <ol className="flex flex-col">
               {steps.map((step, index) => (
                 <li key={step.name} className="border-t border-border last:border-b">
                   <div
                     className={cn(
-                      "flex items-baseline gap-5 py-3.5 transition-colors duration-300",
+                      "flex items-baseline gap-5 py-3.5 transition-colors duration-300 lg:[@media(max-height:860px)]:py-2.5",
                       index === active ? "text-foreground" : "text-faint-foreground",
                     )}
                   >

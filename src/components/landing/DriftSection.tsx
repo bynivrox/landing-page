@@ -1,7 +1,8 @@
 "use client";
 
-import { motion, useMotionValueEvent, useScroll } from "motion/react";
+import { motion, useScroll } from "motion/react";
 import { useRef, useState } from "react";
+import { useMotionValueChange } from "./useMotionValueChange";
 import { cn } from "@/lib/utils";
 import { Container, Panel, PanelHeader, SectionHeading, StatusMark } from "./primitives";
 
@@ -19,7 +20,7 @@ export function DriftSection() {
   const section = useRef<HTMLElement>(null);
   const [changed, setChanged] = useState(false);
   const { scrollYProgress } = useScroll({ target: section, offset: ["start 70%", "end 60%"] });
-  useMotionValueEvent(scrollYProgress, "change", (value) => setChanged(value > 0.45));
+  useMotionValueChange(scrollYProgress, (value) => setChanged(value > 0.45));
 
   return (
     <section id="drift" ref={section} className="relative pt-[var(--section-gap)]">

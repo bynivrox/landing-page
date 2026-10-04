@@ -30,12 +30,12 @@ export function Hero({ trialUrl }: { trialUrl: string }) {
       </motion.div>
       <div aria-hidden className="fade-to-light absolute inset-x-0 bottom-0 -z-10 h-[55%]" />
 
-      <motion.div
-        style={{ y: platformY }}
-        className="pointer-events-none absolute top-[16%] right-[-4%] hidden w-[60%] max-w-[980px] lg:block"
-      >
-        <HeroTopology className="w-full" />
-      </motion.div>
+      {/* Anchored to the text column rather than the viewport, so the scene stays beside the copy on wide screens. */}
+      <div className="pointer-events-none absolute inset-0 mx-auto hidden max-w-7xl lg:block">
+        <motion.div style={{ y: platformY }} className="absolute top-[16%] right-[-12%] w-[58%] max-w-[900px]">
+          <HeroTopology className="w-full" />
+        </motion.div>
+      </div>
 
       <motion.div style={{ opacity: contentOpacity }} className="relative mx-auto flex min-h-[inherit] max-w-7xl flex-col px-6 pt-36 pb-16">
         <div className="flex flex-wrap gap-2">
