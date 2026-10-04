@@ -7,7 +7,7 @@ export const navigation = [
   { href: "/pricing", label: "Pricing" },
 ] as const;
 
-/** What the guide line calls each landing page section (by id); sections without a name are not marked. */
+/** The landing page sections the guide line turns beside (by id), with their names. */
 export const sectionNames: Record<string, string> = {
   top: "Start",
   layers: "Layers",
